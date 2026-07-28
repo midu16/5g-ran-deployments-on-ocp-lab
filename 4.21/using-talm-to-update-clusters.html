@@ -1321,40 +1321,6 @@ EOF</code></pre>
 <div class="paragraph">
 <p>We also need to backup the monitoring configuration since the seed image doesn&#8217;t include the alertmanager configuration for sending alerts to the hub.</p>
 </div>
-<div class="admonitionblock important">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-important" title="Important"></i>
-</td>
-<td class="content">
-ACM Observability creates the Alertmanager secrets in <code>openshift-monitoring</code> with a suffix derived from the hub cluster ID. The Lifecycle Agent <code>lca.openshift.io/apply-label</code> annotation expects the unsuffixed names, so create aliases from the suffixed secrets:
-</td>
-</tr>
-</table>
-</div>
-<div class="listingblock console-input">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc --kubeconfig ~/abi-cluster-kubeconfig get secrets -n openshift-monitoring | grep -E 'observability-alertmanager-accessor|hub-alertmanager-router-ca'</code></pre>
-</div>
-</div>
-<div class="listingblock console">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">hub-alertmanager-router-ca-2a9c5b6e57324cb6a02            Opaque                                1      97m
-observability-alertmanager-accessor-2a9c5b6e57324cb6a02   Opaque                                1      97m</code></pre>
-</div>
-</div>
-<div class="listingblock console-input">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># Repeat for both managed clusters (~/abi-cluster-kubeconfig and ~/ibi-cluster-kubeconfig)
-oc --kubeconfig ~/abi-cluster-kubeconfig get secret observability-alertmanager-accessor-2a9c5b6e57324cb6a02 -n openshift-monitoring -o json | \
-  jq 'del(.metadata.resourceVersion,.metadata.uid,.metadata.creationTimestamp,.metadata.ownerReferences) | .metadata.name="observability-alertmanager-accessor"' | \
-  oc --kubeconfig ~/abi-cluster-kubeconfig apply -f -
-oc --kubeconfig ~/abi-cluster-kubeconfig get secret hub-alertmanager-router-ca-2a9c5b6e57324cb6a02 -n openshift-monitoring -o json | \
-  jq 'del(.metadata.resourceVersion,.metadata.uid,.metadata.creationTimestamp,.metadata.ownerReferences) | .metadata.name="hub-alertmanager-router-ca"' | \
-  oc --kubeconfig ~/abi-cluster-kubeconfig apply -f -</code></pre>
-</div>
-</div>
 <div class="listingblock console-input">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">cat &lt;&lt;EOF &gt; ~/5g-deployment-lab/ztp-repository/site-policies/fleet/active/v4.21/source-crs/custom-crs/PlatformMonitoringBackupRestore.yaml
